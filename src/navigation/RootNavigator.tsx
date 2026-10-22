@@ -1,8 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import {
+  createBottomTabNavigator,
+  type BottomTabBarButtonProps,
+} from "@react-navigation/bottom-tabs";
 import { DefaultTheme, NavigationContainer, type Theme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "../auth/AuthContext";
 import { CategoriesScreen } from "../screens/CategoriesScreen";
 import { DashboardScreen } from "../screens/DashboardScreen";
@@ -45,6 +48,17 @@ const navigationTheme: Theme = {
   },
 };
 
+function TabBarButton({
+  href: _href,
+  pressColor: _pressColor,
+  pressOpacity: _pressOpacity,
+  hoverEffect: _hoverEffect,
+  style,
+  ...props
+}: BottomTabBarButtonProps) {
+  return <Pressable {...props} android_ripple={undefined} style={style} />;
+}
+
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -53,6 +67,7 @@ function MainTabs() {
         tabBarActiveTintColor: colors.brand[600],
         tabBarInactiveTintColor: colors.stone[400],
         tabBarStyle: [styles.tabBar],
+        tabBarButton: (props) => <TabBarButton {...props} />,
         tabBarLabelStyle: styles.tabLabel,
         tabBarItemStyle: styles.tabItem,
         tabBarHideOnKeyboard: true,
