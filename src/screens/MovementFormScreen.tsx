@@ -1,14 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "../api/client";
 import { AppHeader, Screen } from "../components/Screen";
@@ -130,15 +124,15 @@ export function MovementFormScreen({ route }: { route: { params?: { initialVaria
         onBack={() => navigation.goBack()}
       />
 
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         style={styles.flex}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}
+        bottomOffset={24}
+        extraKeyboardSpace={80}
       >
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
           <Card style={styles.section}>
             <SectionHeader
               title="Variante"
@@ -230,8 +224,9 @@ export function MovementFormScreen({ route }: { route: { params?: { initialVaria
               }
             />
           </Card>
-        </ScrollView>
+      </KeyboardAwareScrollView>
 
+      <KeyboardStickyView>
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
           <Button
             title="Registrar movimiento"
@@ -242,7 +237,7 @@ export function MovementFormScreen({ route }: { route: { params?: { initialVaria
             onPress={handleSubmit}
           />
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardStickyView>
     </Screen>
   );
 }

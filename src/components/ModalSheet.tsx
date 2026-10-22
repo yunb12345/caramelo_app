@@ -1,16 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import {
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
 } from "react-native";
+import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fontSizes, fonts, radius, spacing, strongShadow } from "../theme";
 import { IconButton } from "./ui";
@@ -46,46 +44,48 @@ export function ModalSheet({
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Cerrar" />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={styles.keyboardView}
+        <View
+          style={[
+            styles.sheet,
+            {
+              maxHeight: fullHeight ? height * 0.94 : height * 0.9,
+              paddingBottom: Math.max(insets.bottom, spacing.md),
+            },
+          ]}
         >
-          <View
-            style={[
-              styles.sheet,
-              {
-                maxHeight: fullHeight ? height * 0.94 : height * 0.9,
-                paddingBottom: Math.max(insets.bottom, spacing.md),
-              },
-            ]}
-          >
-            <View style={styles.grabber} />
+          <View style={styles.grabber} />
 
-            <View style={styles.header}>
-              <View style={styles.headerText}>
-                <Text style={styles.title}>{title}</Text>
-                {description ? <Text style={styles.description}>{description}</Text> : null}
-              </View>
-              <IconButton
-                icon="close"
-                accessibilityLabel="Cerrar"
-                background={colors.stone[100]}
-                onPress={onClose}
-              />
+          <View style={styles.header}>
+            <View style={styles.headerText}>
+              <Text style={styles.title}>{title}</Text>
+              {description ? <Text style={styles.description}>{description}</Text> : null}
             </View>
-
-            <ScrollView
-              style={styles.scroll}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.content}
-            >
-              {children}
-            </ScrollView>
-
-            {footer ? <View style={styles.footer}>{footer}</View> : null}
+            <IconButton
+              icon="close"
+              accessibilityLabel="Cerrar"
+              background={colors.stone[100]}
+              onPress={onClose}
+            />
           </View>
-        </KeyboardAvoidingView>
+
+          <KeyboardAwareScrollView
+            style={styles.scroll}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.content}
+            bottomOffset={24}
+            extraKeyboardSpace={footer ? 72 : 0}
+          >
+            {children}
+          </KeyboardAwareScrollView>
+
+          {footer ? (
+            <KeyboardStickyView>
+              <View style={styles.footer}>{footer}</View>
+            </KeyboardStickyView>
+          ) : null}
+        </View>
       </View>
     </Modal>
   );
@@ -186,9 +186,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     backgroundColor: colors.overlay,
-  },
-  keyboardView: {
-    width: "100%",
   },
   sheet: {
     width: "100%",

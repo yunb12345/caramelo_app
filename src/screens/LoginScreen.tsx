@@ -1,16 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { checkHealth, getDefaultApiUrl, normalizeApiUrl } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -83,15 +75,14 @@ export function LoginScreen() {
     <View style={styles.root}>
       <StatusBar style="light" />
 
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         style={styles.flex}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}
+        bottomOffset={24}
       >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
           <View style={styles.hero}>
             <View style={styles.blobLarge} />
             <View style={styles.blobSmall} />
@@ -271,8 +262,7 @@ export function LoginScreen() {
               Las credenciales iniciales estan en apps/api/.env
             </Text>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }

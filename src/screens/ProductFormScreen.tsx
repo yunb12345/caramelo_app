@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "../api/client";
 import { BarcodeScannerModal } from "../components/BarcodeScannerModal";
@@ -491,10 +492,14 @@ export function ProductFormScreen({ route }: { route: { params?: { productId?: s
         />
       ) : (
         <>
-          <ScrollView
+          <KeyboardAwareScrollView
+            style={styles.flex}
             contentContainerStyle={styles.content}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             showsVerticalScrollIndicator={false}
+            bottomOffset={24}
+            extraKeyboardSpace={80}
           >
             <Card style={styles.section}>
               <SectionHeader title="Datos del producto" />
@@ -703,18 +708,20 @@ export function ProductFormScreen({ route }: { route: { params?: { productId?: s
                   : "El stock inicial se registra como un ingreso en el historial de movimientos."
               }
             />
-          </ScrollView>
+          </KeyboardAwareScrollView>
 
-          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
-            <Button
-              title={isEdit ? "Guardar cambios" : "Crear producto"}
-              icon="save-outline"
-              size="lg"
-              fullWidth
-              loading={saving}
-              onPress={() => void handleSave()}
-            />
-          </View>
+          <KeyboardStickyView>
+            <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
+              <Button
+                title={isEdit ? "Guardar cambios" : "Crear producto"}
+                icon="save-outline"
+                size="lg"
+                fullWidth
+                loading={saving}
+                onPress={() => void handleSave()}
+              />
+            </View>
+          </KeyboardStickyView>
         </>
       )}
 
