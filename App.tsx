@@ -18,7 +18,7 @@ const queryClient = new QueryClient({
 
 export default function App() {
   return (
-    <KeyboardProvider statusBarTranslucent navigationBarTranslucent={false}>
+    <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>

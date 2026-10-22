@@ -50,7 +50,7 @@ const TAB_BAR_CONTENT_HEIGHT = 60;
 
 function MainTabs() {
   const insets = useSafeAreaInsets();
-  const bottomInset = Math.max(insets.bottom, Platform.OS === "android" ? 10 : 0);
+  const bottomInset = Platform.OS === "android" ? insets.bottom || 48 : insets.bottom;
 
   return (
     <Tab.Navigator
