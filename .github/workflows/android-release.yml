@@ -43,7 +43,18 @@ jobs:
           EXPO_NO_TELEMETRY: "1"
 
       - name: Install Android NDK
-        run: yes | sdkmanager "ndk;27.1.12297006" > /dev/null
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          NDK_VERSION="27.1.12297006"
+
+          if [ -d "$SDK_ROOT/ndk/$NDK_VERSION" ]; then
+            echo "NDK $NDK_VERSION already installed"
+            exit 0
+          fi
+
+          SDKMANAGER="$(find "$SDK_ROOT" -type f -name sdkmanager | head -n 1)"
+          echo "Using sdkmanager: $SDKMANAGER"
+          printf 'y\n%.0s' {1..50} | "$SDKMANAGER" "ndk;$NDK_VERSION"
 
       - name: Build release APK
         run: |
