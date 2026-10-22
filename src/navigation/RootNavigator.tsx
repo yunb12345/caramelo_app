@@ -2,8 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { DefaultTheme, NavigationContainer, type Theme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { ActivityIndicator, Platform, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "../auth/AuthContext";
 import { CategoriesScreen } from "../screens/CategoriesScreen";
 import { DashboardScreen } from "../screens/DashboardScreen";
@@ -46,26 +45,14 @@ const navigationTheme: Theme = {
   },
 };
 
-const TAB_BAR_CONTENT_HEIGHT = 60;
-
 function MainTabs() {
-  const insets = useSafeAreaInsets();
-  const bottomInset = Platform.OS === "android" ? insets.bottom || 48 : insets.bottom;
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.brand[600],
         tabBarInactiveTintColor: colors.stone[400],
-        tabBarStyle: [
-          styles.tabBar,
-          {
-            height: TAB_BAR_CONTENT_HEIGHT + bottomInset,
-            paddingTop: 6,
-            paddingBottom: bottomInset,
-          },
-        ],
+        tabBarStyle: [styles.tabBar],
         tabBarLabelStyle: styles.tabLabel,
         tabBarItemStyle: styles.tabItem,
         tabBarHideOnKeyboard: true,
