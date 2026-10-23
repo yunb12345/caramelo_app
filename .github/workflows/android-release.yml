@@ -86,8 +86,8 @@ jobs:
             1. Descargá el archivo `.apk` adjunto.
             2. En Android, permití la instalación de apps de origen desconocido.
             3. Instalá el APK y abrí Caramelo.
-            4. En la pantalla de inicio de sesión, tocá **Servidor** e ingresá la URL de la API
-               (por ejemplo `http://192.168.0.10:3001/api`).
+            4. Iniciá sesión con `admin@caramelo.local` / `caramelo123`.
+               La app ya viene configurada contra la API de Render.
 
             ### Notas
             - El APK está firmado con la clave de desarrollo de Expo: sirve para instalar

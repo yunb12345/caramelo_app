@@ -217,8 +217,8 @@ export function LoginScreen() {
                       setApiUrlInput(value);
                       setTestResult(null);
                     }}
-                    hint="En un celular usa la IP de la computadora, por ejemplo http://192.168.0.10:3001"
-                    placeholder="http://192.168.0.10:3001"
+                    hint="Por defecto se usa la API en la nube. Cambiala solo si tenes un servidor propio."
+                    placeholder={getDefaultApiUrl()}
                     keyboardType="url"
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -235,7 +235,7 @@ export function LoginScreen() {
                       style={styles.flex}
                     />
                     <Button
-                      title="Detectada"
+                      title="Predeterminada"
                       variant="ghost"
                       size="sm"
                       onPress={() => {

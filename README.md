@@ -34,7 +34,9 @@ Es un cliente de la API existente (Fastify + PostgreSQL + JWT): no guarda datos 
 npm install
 ```
 
-## 2. Levantar la API
+## 2. Levantar la API (opcional)
+
+La app ya apunta a la API desplegada en Render, así que este paso solo es necesario si querés correr el backend en tu computadora.
 
 En una copia del repositorio del backend:
 
@@ -91,22 +93,42 @@ Credenciales del seed:
 
 > Si cambiás `ADMIN_EMAIL` o `ADMIN_PASSWORD` en `.env`, el seed crea el usuario con esos valores.
 
-## 3. Configurar la URL de la API en la app
+## 3. Servidor de la API
 
-La app intenta detectar el servidor automáticamente según el entorno de Expo. Si no lo encuentra:
+La app apunta por defecto a la API desplegada en Render:
 
-| Entorno | URL |
-| --- | --- |
-| Emulador Android | `http://10.0.2.2:3001/api` |
-| Teléfono físico (misma WiFi) | `http://IP-DE-LA-PC:3001/api` |
-| Producción | `https://tu-dominio.com/api` |
+```
+https://caramelo-api-tijm.onrender.com/api
+```
 
-La URL se puede cambiar desde:
+No hace falta configurar nada: al abrir la app ya consulta ese servidor. La URL se puede revisar o cambiar desde:
 
 - **Login → Servidor**, antes de iniciar sesión.
 - **Más → Servidor**, con la sesión iniciada.
 
 La app agrega `/api` automáticamente si no lo incluís y acepta HTTP o HTTPS.
+
+> La instancia gratuita de Render se suspende cuando está inactiva. La primera petición puede tardar hasta un minuto en despertarla; la app espera hasta 60 segundos. Si falla, volvé a intentar.
+
+### Usar un backend local (opcional)
+
+| Entorno | URL |
+| --- | --- |
+| Emulador Android | `http://10.0.2.2:3001/api` |
+| Teléfono físico (misma WiFi) | `http://IP-DE-LA-PC:3001/api` |
+
+Podés cambiar la URL desde la pantalla **Servidor** o definirla al iniciar Expo:
+
+```powershell
+# Windows (PowerShell)
+$env:EXPO_PUBLIC_API_URL="http://192.168.0.10:3001"
+npm start
+```
+
+```bash
+# macOS / Linux
+EXPO_PUBLIC_API_URL=http://192.168.0.10:3001 npm start
+```
 
 ### Obtener la IP de la PC
 
@@ -145,7 +167,20 @@ npm start
 - Escaneá el QR con **Expo Go** en Android.
 - O presioná `a` para abrir el emulador Android.
 
-En el login, abrí **Servidor**, ingresá la URL correspondiente, usá **Probar conexión** y luego iniciá sesión.
+En el login, la app ya viene apuntando a la API de Render. Solo abrí **Servidor** si querés usar otra dirección, tocá **Probar conexión** y luego iniciá sesión.
+
+### Probar en el navegador (web)
+
+El backend solo acepta CORS desde `https://caramelo-web.onrender.com`, así que el navegador bloquea las llamadas directas desde `http://localhost:8081`. Para desarrollo web usá:
+
+```bash
+npm run web
+```
+
+Ese comando levanta un proxy local en `http://localhost:3002/api` y abre Expo web con `EXPO_PUBLIC_API_URL` apuntando al proxy. El proxy agrega los headers CORS y reenvía todo al backend, sin modificar la API desplegada.
+
+> En Android no hace falta el proxy: la app llama directo a Render.
+> Para publicar la versión web, servila desde un origen incluido en `CORS_ORIGIN` del backend o detrás de un proxy del mismo origen.
 
 ### Probar el escaneo de códigos
 
@@ -187,6 +222,7 @@ En Windows el APK queda en `android/app/build/outputs/apk/release/`. En este pro
 | Comando | Qué hace |
 | --- | --- |
 | `npm start` | Inicia Metro/Expo |
+| `npm run web` | Expo web + proxy local contra la API (evita CORS) |
 | `npm run android` | Abre Expo en un emulador Android |
 | `npm run typecheck` | Verifica TypeScript sin emitir archivos |
 | `npm run prebuild` | Genera las carpetas nativas `android`/`ios` |
@@ -226,9 +262,10 @@ En Windows el APK queda en `android/app/build/outputs/apk/release/`. En este pro
 
 | Problema | Solución |
 | --- | --- |
-| "No se pudo conectar con el servidor" | Verificá que la API esté encendida, la IP sea correcta y el puerto 3001 esté permitido en el firewall. |
-| El emulador no conecta | Usá `http://10.0.2.2:3001/api` (no `localhost`). |
-| El celular no conecta | Usá la IP LAN de la PC, misma WiFi, y `HOST=0.0.0.0` en la API. |
+| "No se pudo conectar con el servidor" | Revisá tu conexión a internet y que la URL mostrada en **Servidor** termine en `/api`. La instancia gratuita de Render puede tardar ~1 minuto en despertar. |
+| En el navegador no conecta | El backend no permite CORS desde `localhost`. Usá `npm run web` (levanta el proxy local). |
+| El emulador no conecta con un backend local | Usá `http://10.0.2.2:3001/api` (no `localhost`). |
+| El celular no conecta con un backend local | Usá la IP LAN de la PC, misma WiFi, y `HOST=0.0.0.0` en la API. |
 | "Email o contraseña incorrectos" | Revisá `ADMIN_EMAIL`/`ADMIN_PASSWORD` y volvé a ejecutar `pnpm db:seed`. |
 | La cámara no escanea | Concedé el permiso de cámara desde Ajustes de Android y verificá que haya luz. |
 | `npm start` pide elegir conexión | Elegí **LAN** para probar en un teléfono físico. |

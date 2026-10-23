@@ -1,5 +1,5 @@
 export const APP_NAME = "Caramelo";
-export const APP_VERSION = "1.0.0";
+export const APP_VERSION = "1.0.3";
 export const CURRENCY = "ARS";
 
 export const PAYMENT_METHODS = ["CASH", "CARD", "TRANSFER", "OTHER"] as const;

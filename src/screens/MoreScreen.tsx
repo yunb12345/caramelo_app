@@ -190,7 +190,7 @@ export function MoreScreen() {
             setServerUrl(value);
             setTestResult(null);
           }}
-          placeholder="http://192.168.0.10:3001"
+          placeholder={getDefaultApiUrl()}
           keyboardType="url"
           autoCapitalize="none"
           autoCorrect={false}
@@ -209,7 +209,7 @@ export function MoreScreen() {
             style={styles.flex}
           />
           <Button
-            title="Detectada"
+            title="Predeterminada"
             variant="ghost"
             size="sm"
             onPress={() => {
@@ -229,7 +229,7 @@ export function MoreScreen() {
 
         <InfoBanner
           icon="bulb-outline"
-          text="En un emulador Android usa 10.0.2.2. En un celular fisico, la IP de la computadora en la misma red WiFi."
+          text="Por defecto se conecta a la API desplegada en Render. Solo cambiala si vas a usar un servidor propio en la misma red."
         />
       </ModalSheet>
     </ScrollScreen>

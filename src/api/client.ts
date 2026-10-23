@@ -1,45 +1,45 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Constants from "expo-constants";
-import { Platform } from "react-native";
 import type { ApiErrorBody } from "../types";
 
 const API_URL_KEY = "caramelo.apiUrl";
 const TOKEN_KEY = "caramelo.token";
 
-function detectDevHost(): string | null {
-  const hostUri =
-    Constants.expoConfig?.hostUri ??
-    (Constants as { expoGoConfig?: { debuggerHost?: string } }).expoGoConfig?.debuggerHost;
+/**
+ * API desplegada en Render. Se usa por defecto en la app.
+ * Para apuntar a otro servidor sin recompilar, definí EXPO_PUBLIC_API_URL
+ * (por ejemplo http://192.168.0.10:3001) al iniciar Expo.
+ */
+export const DEPLOYED_API_URL = "https://caramelo-api-tijm.onrender.com/api";
 
-  if (!hostUri) return null;
-
-  const host = hostUri.split(":")[0];
-  if (!host || host === "localhost" || host === "127.0.0.1") return null;
-  if (host.endsWith("exp.host") || host.endsWith("expo.dev")) return null;
-
-  return host;
-}
-
-export function getDefaultApiUrl(): string {
-  const host = detectDevHost();
-
-  if (host) return `http://${host}:3001/api`;
-  if (Platform.OS === "android") return "http://10.0.2.2:3001/api";
-  return "http://localhost:3001/api";
-}
-
-export const DEFAULT_API_URL = getDefaultApiUrl();
-
-export function normalizeApiUrl(value: string): string {
+function buildApiUrl(value: string): string {
   let url = value.trim();
 
-  if (!url) return DEFAULT_API_URL;
+  if (!url) return "";
   if (!/^https?:\/\//i.test(url)) url = `http://${url}`;
 
   url = url.replace(/\/+$/, "");
   if (!/\/api$/i.test(url)) url = `${url}/api`;
 
   return url;
+}
+
+export function getDefaultApiUrl(): string {
+  const fromEnv = process.env.EXPO_PUBLIC_API_URL?.trim();
+
+  return buildApiUrl(fromEnv || DEPLOYED_API_URL) || DEPLOYED_API_URL;
+}
+
+export const DEFAULT_API_URL = getDefaultApiUrl();
+
+// Direcciones locales del backend de desarrollo que ya no se usan por defecto.
+const LEGACY_LOCAL_URLS = new Set([
+  "http://localhost:3001/api",
+  "http://127.0.0.1:3001/api",
+  "http://10.0.2.2:3001/api",
+]);
+
+export function normalizeApiUrl(value: string): string {
+  return buildApiUrl(value) || DEFAULT_API_URL;
 }
 
 export class ApiError extends Error {
@@ -79,7 +79,21 @@ export async function initApi(): Promise<{ apiUrl: string; token: string | null 
     AsyncStorage.getItem(TOKEN_KEY),
   ]);
 
-  apiBaseUrl = storedUrl ? normalizeApiUrl(storedUrl) : DEFAULT_API_URL;
+  const normalized = storedUrl ? normalizeApiUrl(storedUrl) : null;
+  const wasLegacyLocal = normalized ? LEGACY_LOCAL_URLS.has(normalized.toLowerCase()) : false;
+  const forcedFromEnv = Boolean(process.env.EXPO_PUBLIC_API_URL?.trim());
+
+  // EXPO_PUBLIC_API_URL tiene prioridad sobre lo guardado (ej. proxy de web).
+  apiBaseUrl =
+    forcedFromEnv || wasLegacyLocal || !normalized ? DEFAULT_API_URL : normalized;
+
+  // Si quedo guardada una URL local vieja, se vuelve a la API desplegada.
+  if (wasLegacyLocal) {
+    await AsyncStorage.removeItem(API_URL_KEY);
+  } else if (!forcedFromEnv && storedUrl && storedUrl !== apiBaseUrl) {
+    await AsyncStorage.setItem(API_URL_KEY, apiBaseUrl);
+  }
+
   authToken = storedToken;
   return { apiUrl: apiBaseUrl, token: authToken };
 }
@@ -104,7 +118,9 @@ type RequestOptions = {
   timeoutMs?: number;
 };
 
-const TIMEOUT_MS = 20_000;
+// Render apaga la instancia cuando esta inactiva: el primer request puede tardar
+// hasta ~1 minuto en despertarla.
+const TIMEOUT_MS = 60_000;
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, timeoutMs = TIMEOUT_MS } = options;
@@ -129,10 +145,13 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     });
   } catch (error) {
     if ((error as { name?: string }).name === "AbortError") {
-      throw new ApiError("El servidor no respondio a tiempo. Revisa tu conexion.", 0);
+      throw new ApiError(
+        "El servidor tardo demasiado en responder. Si estaba inactivo, volve a intentar en unos segundos.",
+        0,
+      );
     }
     throw new ApiError(
-      "No se pudo conectar con el servidor. Revisa la direccion y tu conexion.",
+      `No se pudo conectar con el servidor (${apiBaseUrl}). Revisa tu conexion a internet e intenta de nuevo.`,
       0,
     );
   } finally {
@@ -180,7 +199,7 @@ export const api = {
 export async function checkHealth(value: string): Promise<void> {
   const base = normalizeApiUrl(value);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8_000);
+  const timeout = setTimeout(() => controller.abort(), 30_000);
 
   try {
     const response = await fetch(`${base}/health`, { signal: controller.signal });
@@ -194,7 +213,7 @@ export async function checkHealth(value: string): Promise<void> {
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(
-      "No se pudo conectar. Verifica que la API este encendida y la IP sea correcta.",
+      `No se pudo conectar con la API (${base}). Revisa tu conexion e intenta de nuevo.`,
       0,
     );
   } finally {
